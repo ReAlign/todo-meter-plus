@@ -4,7 +4,7 @@
 
 A to-do-list built with Electron, React, Redux, and LESS, based on [cassidoo/todometer](http://cassidoo.github.io/todometer).
 
-![todometer](static/assets/logo.svg)
+![todometer](static/assets/png/512x512.png)
 
 ## Development
 
