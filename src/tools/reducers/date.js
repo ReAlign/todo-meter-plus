@@ -1,4 +1,4 @@
-import { SET_DATE } from '../actions';
+import { SET_DATE } from './../actions';
 
 // initialize state
 const initialState = {

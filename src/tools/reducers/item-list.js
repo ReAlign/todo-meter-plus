@@ -1,4 +1,4 @@
-import { ADD_ITEM, UPDATE_ITEM, DELETE_ITEM, RESET_ALL } from '../actions';
+import { ADD_ITEM, UPDATE_ITEM, DELETE_ITEM, RESET_ALL } from './../actions';
 
 // initialize state
 const initialState = {

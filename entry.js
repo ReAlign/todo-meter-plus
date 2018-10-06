@@ -5,13 +5,22 @@ import {
     app,
     BrowserWindow,
     Menu,
+    ipcMain,
     dialog,
     shell
 } from 'electron';
+import { getData } from './src/tools/local-storage';
 import setupEvents from './src/installers/setup-events';
 import {
     version
 } from './package.json';
+
+
+ipcMain.on('async-update-lang-cb', (event, arg) => {
+    if(arg.res) {
+        MW.mainWindow.reload();
+    }
+});
 
 const MW = {
     willQuit: false,
@@ -20,89 +29,108 @@ const MW = {
             console.log('show');
         }
     },
-    menuTpl: [
-        {
-            label: 'todometer',
-            submenu: [{
-                    label: 'About',
-                    click: () => {
-                        dialog.showMessageBox(MW.mainWindow, {
-                            type: 'info',
-                            title: 'About',
-                            message: 'todometer is built by Cassidy Williams',
-                            detail: 'You can find her on GitHub and Twitter as @cassidoo, or on her website cassidoo.co.',
-                            icon: path.join(__dirname, 'assets/png/64x64.png')
-                        });
+    menuTpl() {
+        return [
+            {
+                label: 'todo-meter-plus',
+                submenu: [
+                    {
+                        label: 'About',
+                        click() {
+                            dialog.showMessageBox(MW.mainWindow, {
+                                type: 'info',
+                                title: 'About todo-meter-plus',
+                                message: 'todo-meter-plus built with electron, based on cassidoo/todometer',
+                                detail: '©copyright ReAlign',
+                                buttons: [],
+                                icon: path.join(__dirname, 'static/assets/png/64x64.png')
+                            });
+                        }
+                    },
+                    {
+                        label: `Contribute (v${version})`,
+                        click() {
+                            shell.openExternal('https://github.com/ReAlign/todo-meter-plus');
+                        }
+                    },
+                    {
+                        type: 'separator'
+                    },
+                    {
+                        label: 'Dev tools',
+                        click() {
+                            MW.mainWindow.webContents.openDevTools();
+                        }
+                    },
+                    {
+                        label: 'Quit',
+                        accelerator: 'CommandOrControl+Q',
+                        click() {
+                            app.quit();
+                        }
                     }
-                },
-                {
-                    label: 'Contribute (v' + version + ')',
-                    click: () => {
-                        shell.openExternal('http://github.com/cassidoo/todometer');
-                    }
-                },
-                {
-                    type: 'separator'
-                }, {
-                    label: 'Dev tools',
-                    click: () => {
-                        MW.mainWindow.webContents.openDevTools();
-                    }
-                },
-                {
-                    label: 'Quit',
-                    accelerator: 'CommandOrControl+Q',
-                    click: () => {
-                        app.quit();
-                    }
-                }
-            ]
-        },
-        {
-            label: 'Edit',
-            submenu: [{
-                    role: 'undo'
-                },
-                {
-                    role: 'redo'
-                },
-                {
-                    role: 'cut'
-                },
-                {
-                    role: 'copy'
-                },
-                {
-                    role: 'paste'
-                },
-                {
-                    role: 'delete'
-                },
-                {
-                    role: 'selectall'
-                }
-            ]
-        },
-        {
-            label: 'View',
-            submenu: [{
-                    role: 'reload'
-                },
-                {
-                    role: 'togglefullscreen'
-                },
-                {
-                    role: 'minimize'
-                },
-                {
-                    role: 'hide'
-                },
-                {
-                    role: 'close'
-                }
-            ]
-        }
-    ],
+                ]
+            },
+            {
+                label: 'Language',
+                submenu:  MW.getLanguageTpl()
+            },
+            {
+                label: 'Edit',
+                submenu: [
+                    { role: 'undo' },
+                    { role: 'redo' },
+                    { role: 'cut' },
+                    { role: 'copy' },
+                    { role: 'paste' },
+                    { role: 'delete' },
+                    { role: 'selectall' }
+                ]
+            },
+            {
+                label: 'View',
+                submenu: [
+                    { role: 'togglefullscreen' },
+                    { role: 'minimize' },
+                    { role: 'hide' },
+                    { role: 'close' }
+                ]
+            }
+        ];
+    },
+    getLanguageTpl() {
+        let _base = [
+            {
+                label: 'English',
+                _lang: 'en',
+                type: 'radio',
+                checked: false,
+                click() { MW._setLang('en') }
+            },
+            {
+                label: ' 中文',
+                _lang: 'zh-cn',
+                type: 'radio',
+                checked: false,
+                click() { MW._setLang('zh-cn') }
+            }
+        ];
+
+        const _lang = getData('langLSKey') || 'en';
+
+        _base.forEach(item => {
+            if(item._lang === _lang) {
+                item.checked = true;
+            }
+        });
+
+        return _base;
+    },
+    _setLang(lang = 'en') {
+        MW.mainWindow.webContents.send('async-update-lang', {
+            'langLSKey': lang
+        });
+    },
     createWindow() {
         MW.mainWindow = new BrowserWindow({
             width: 800,
@@ -110,7 +138,7 @@ const MW = {
             height: 600,
             fullscreenable: true,
             backgroundColor: '#403F4D',
-            icon: path.join(__dirname, 'assets/png/128x128.png')
+            icon: path.join(__dirname, 'static/assets/png/128x128.png')
         });
         MW.mainWindow.loadURL('file://' + __dirname + '/static/index.html');
     },
@@ -126,7 +154,7 @@ const MW = {
         }
     },
     menuSetup() {
-        const menu = Menu.buildFromTemplate(MW.menuTpl);
+        const menu = Menu.buildFromTemplate(MW.menuTpl());
         Menu.setApplicationMenu(menu);
     }
 };

@@ -6,6 +6,9 @@ import moment from 'moment';
 import { connect } from 'react-redux';
 import { setDate, resetAll } from './../../tools/actions';
 import { getDate } from './../../tools/reducers/date';
+import { getData } from './../../tools/local-storage';
+
+moment.locale(getData('langLSKey'));
 
 class DateComp extends React.Component {
     constructor(props) {

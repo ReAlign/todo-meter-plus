@@ -19,7 +19,7 @@ function getInstallerConfig() {
         noMsi: true,
         outputDirectory: path.join(outPath, 'windows-installer'),
         exe: 'todo-meter-plus.exe',
-        setupExe: 'todoMeterPlusInstaller.exe',
+        setupExe: 'todo-meter-plus-installer.exe',
         setupIcon: path.join(rootPath, 'static', 'assets', 'win', 'icon.png.ico'),
         skipUpdateIcon: true,
         versionString: {
